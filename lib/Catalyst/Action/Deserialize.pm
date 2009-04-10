@@ -1,47 +1,45 @@
-#
-# Catlyst::Action::Deserialize
-# Created by: Adam Jacob, Marchex, <adam@hjksolutions.com>
-#
-# $Id$
-
 package Catalyst::Action::Deserialize;
 
-use strict;
-use warnings;
+use Moose;
+extends 'Catalyst::Action';
+with 'Catalyst::ActionRole::SerializeBase' => {
+  namespace_suffix => 'Deserializer'
+};
+use Catalyst::RequestRole::Deserialize;
+use namespace::clean -except => 'meta';
 
-use base 'Catalyst::Action::SerializeBase';
-use Module::Pluggable::Object;
+around execute => sub {
+  my $next = shift;
+  my $self = shift;
+  my ( $controller, $c ) = @_;
 
-__PACKAGE__->mk_accessors(qw(plugins));
+  my @demethods = qw(POST PUT OPTIONS);
+  my $method    = $c->request->method;
+  if ( grep /^$method$/, @demethods ) {
+    Catalyst::RequestRole::Deserialize->meta->apply($c->request);
 
-sub execute {
-    my $self = shift;
-    my ( $controller, $c ) = @_;
+    my ($content_type, $component, $arg) =
+      $self->resolve_content_type($controller, $c);
 
-    my @demethods = qw(POST PUT OPTIONS);
-    my $method    = $c->request->method;
-    if ( grep /^$method$/, @demethods ) {
-        my ( $sclass, $sarg, $content_type ) =
-          $self->_load_content_plugins( 'Catalyst::Action::Deserialize',
-            $controller, $c );
-        return 1 unless defined($sclass);
-        my $rc;
-        if ( defined($sarg) ) {
-            $rc = $sclass->execute( $controller, $c, $sarg );
-        } else {
-            $rc = $sclass->execute( $controller, $c );
-        }
-        if ( $rc eq "0" ) {
-            return $self->_unsupported_media_type( $c, $content_type );
-        } elsif ( $rc ne "1" ) {
-            return $self->_serialize_bad_request( $c, $content_type, $rc );
-        }
+    my $body = $c->request->body;
+    if ($body) {
+      # XXX handle unsupported media/bad request
+      $c->request->_set_data($component->deserialize($body));
+    } else {
+      $c->log->debug(
+        "I would have deserialized from '$content_type', " .
+        "but there was nothing in the body!"
+      ) if $c->debug;
     }
+  }
 
-    $self->NEXT::execute(@_);
+  $self->$next(@_);
 
-    return 1;
-}
+  return 1;
+};
+
+1;
+__END__
 
 =head1 NAME
 
@@ -106,4 +104,3 @@ You may distribute this code under the same terms as Perl itself.
 
 =cut
 
-1;

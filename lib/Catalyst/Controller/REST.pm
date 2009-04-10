@@ -463,12 +463,6 @@ and use NEXT:
 
 =back
 
-=head1 A MILD WARNING
-
-I have code in production using L<Catalyst::Controller::REST>.  That said,
-it is still under development, and it's possible that things may change
-between releases.  I promise to not break things unneccesarily. :)
-
 =head1 SEE ALSO
 
 L<Catalyst::Action::REST>, L<Catalyst::Action::Serialize>,

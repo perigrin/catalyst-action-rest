@@ -13,19 +13,12 @@ use warnings;
 use base 'Catalyst::Action';
 use Class::Inspector;
 use Catalyst;
-use Catalyst::Request::REST;
+use Catalyst::RequestRole::REST;
 use Catalyst::Controller::REST;
 
 BEGIN { require 5.008001; }
 
 our $VERSION = '0.71';
-
-sub new {
-  my $class  = shift;
-  my $config = shift;
-  Catalyst::Request::REST->_insert_self_into( $config->{class} );
-  return $class->SUPER::new($config, @_);
-}
 
 =head1 NAME
 
@@ -71,8 +64,9 @@ It is likely that you really want to look at L<Catalyst::Controller::REST>,
 which brings this class together with automatic Serialization of requests
 and responses.
 
-When you use this module, the request class will be changed to
-L<Catalyst::Request::REST>.
+When actions using this role are dispatched through, the
+L<Catalyst::RequestRole::REST> role will be applied to the incoming request
+object.
 
 =head1 METHODS
 
@@ -88,6 +82,8 @@ mechanism described above.
 sub dispatch {
     my $self = shift;
     my $c    = shift;
+
+    Catalyst::RequestRole::REST->meta->apply($c->request);
 
     my $controller = $c->component( $self->class );
     my $method     = $self->name . "_" . uc( $c->request->method );

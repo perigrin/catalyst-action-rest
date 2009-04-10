@@ -27,7 +27,7 @@ sub execute {
         if ($@) {
             return $@;
         }
-        $c->request->data($rdata);
+        $c->request->_set_data($rdata);
     } else {
         $c->log->debug(
             'I would have deserialized, but there was nothing in the body!')
