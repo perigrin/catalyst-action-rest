@@ -1,57 +1,44 @@
-#
-# Catlyst::Action::Serialize.pm
-# Created by: Adam Jacob, Marchex, <adam@hjksolutions.com>
-#
-# $Id$
-
 package Catalyst::Action::Serialize;
 
-use strict;
-use warnings;
+use Moose;
+extends 'Catalyst::Action';
+with 'Catalyst::ActionRole::SerializeBase' => {
+  namespace_suffix => 'Serializer',
+};
+use Catalyst::ControllerRole::SerializeBase;
+use namespace::clean -except => 'meta';
 
-use base 'Catalyst::Action::SerializeBase';
-use Module::Pluggable::Object;
 
-sub execute {
-    my $self = shift;
-    my ( $controller, $c ) = @_;
+after execute => sub {
+  my ($self, $controller, $c) = @_;
 
-    $self->NEXT::execute(@_);
+  return 1 if $c->req->method eq 'HEAD';
+  return 1 if length( $c->response->body );
+  return 1 if scalar @{ $c->error };
+  return 1 if $c->response->status =~ /^(?:204|3\d\d)$/;
 
-    return 1 if $c->req->method eq 'HEAD';
-    return 1 if length( $c->response->body );
-    return 1 if scalar @{ $c->error };
-    return 1 if $c->response->status =~ /^(?:204|3\d\d)$/;
+  my ($content_type, $plugin, $arg) = 
+    eval { $self->resolve_content_type($controller, $c) };
+  die $@ if $@ and not (blessed $@ eq 'Catalyst::Action::Serialize::Exception');
 
-    my ( $sclass, $sarg, $content_type ) =
-      $self->_load_content_plugins( "Catalyst::Action::Serialize",
-        $controller, $c );
-    unless ( defined($sclass) ) {
-        if ( defined($content_type) ) {
-            $c->log->info("Could not find a serializer for $content_type");
-        } else {
-            $c->log->info(
-                "Could not find a serializer for an empty content type");
-        }
-        return 1;
-    }
-    $c->log->debug(
-        "Serializing with $sclass" . ( $sarg ? " [$sarg]" : '' ) ) if $c->debug;
-
-    my $rc;
-    if ( defined($sarg) ) {
-        $rc = $sclass->execute( $controller, $c, $sarg );
+  unless ($plugin) {
+    if (defined($content_type) ) {
+      $c->log->info("Could not find a serializer for $content_type");
     } else {
-        $rc = $sclass->execute( $controller, $c );
+      $c->log->info("Could not find a serializer for an empty content type");
     }
-    if ( $rc eq 0 ) {
-        return $self->_unsupported_media_type( $c, $content_type );
-    } elsif ( $rc ne 1 ) {
-        return $self->_serialize_bad_request( $c, $content_type, $rc );
-    }
-
     return 1;
-}
+  }
+  $c->log->debug(
+      "Serializing with $plugin" . ( $arg ? " [$arg]" : '' ) ) if $c->debug;
+
+  Catalyst::ControllerRole::SerializeBase->meta->apply($controller);
+
+  my $stash_key = ($controller->serialize_config->{stash_key} || 'rest');
+  $c->response->output(
+    $plugin->serialize($c->stash->{$stash_key}, $arg)
+  );
+};
 
 1;
 

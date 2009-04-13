@@ -10,32 +10,37 @@ use namespace::clean -except => 'meta';
 
 around execute => sub {
   my $next = shift;
-  my $self = shift;
-  my ( $controller, $c ) = @_;
+  my ($self, $controller, $c) = @_;
 
   my @demethods = qw(POST PUT OPTIONS);
   my $method    = $c->request->method;
   if ( grep /^$method$/, @demethods ) {
-    Catalyst::RequestRole::Deserialize->meta->apply($c->request);
+    eval {
+      Catalyst::RequestRole::Deserialize->meta->apply($c->request);
 
-    my ($content_type, $component, $arg) =
-      $self->resolve_content_type($controller, $c);
+      my ($content_type, $plugin, $arg) =
+        $self->resolve_content_type($controller, $c);
 
-    my $body = $c->request->body;
-    if ($body) {
-      # XXX handle unsupported media/bad request
-      $c->request->_set_data($component->deserialize($body));
-    } else {
-      $c->log->debug(
-        "I would have deserialized from '$content_type', " .
-        "but there was nothing in the body!"
-      ) if $c->debug;
-    }
+      my $body = $c->request->body;
+      if ($body) {
+        $c->request->_set_data($plugin->deserialize($body));
+      } else {
+        $c->log->debug(
+          "I would have deserialized from '$content_type', " .
+          "but there was nothing in the body!"
+        ) if $c->debug;
+      }
+    };
+    if (my $e = $@) {
+      if (blessed $e eq 'Catalyst::Action::Serialize::Exception') {
+        $e->($c);
+        return;
+      } else {
+        die $@;
+      }
+    } 
   }
-
-  $self->$next(@_);
-
-  return 1;
+  return $self->$next($controller, $c);
 };
 
 1;
