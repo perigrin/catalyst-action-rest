@@ -4,7 +4,8 @@ use Moose::Role; # stict/warnings included
 
 sub _insert_self_into {
     my ($class, $app_class) = @_;
-    $app_class->request(Catalyst::TraitFor::Request::REST)->meta->apply_role($app_class->request);
+    # FIXME, check if it already does_role
+    $app_class->request(Catalyst::TraitFor::Request::REST->meta->apply_role($app_class->request);
 }
 
 sub accepted_content_types {
