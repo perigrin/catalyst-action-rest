@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 9;
+use Test::More tests => 13;
 use Data::Serializer;
 use FindBin;
 
@@ -8,7 +8,9 @@ use lib ("$FindBin::Bin/lib", "$FindBin::Bin/../lib", "$FindBin::Bin/broken");
 use Test::Rest;
 
 # Should use Data::Dumper, via YAML 
-my $t = Test::Rest->new('content_type' => 'text/x-data-dumper');
+my $t = Test::Rest->new(
+    'content_type' => 'text/x-data-dumper',
+);
 
 use_ok 'Catalyst::Test', 'Test::Catalyst::Action::REST';
 
@@ -34,5 +36,26 @@ Test::Catalyst::Action::REST->controller('Serialize')->{serialize} = {};
 $res2 = request($t->get(url => '/serialize/test_second'));
 ok( $res2->is_success, 'request succeeded (deprecated config)' );
 is( $res2->content, "{'lou' => 'is my cat'}", "request returned proper data");
+
+# This test check that the 'Accept' header have the priority for the
+# serialization format vs. 'Content-Type'
+# http://rt.cpan.org/Public/Bug/Display.html?id=46974
+$t = Test::Rest->new(
+    'content_type' => 'application/json',
+    'accept'       => 'text/x-data-dumper',
+);
+
+my $res_accept = request($t->get(url => '/serialize/test'));
+ok( $res_accept->is_success, 'GET the serialized request succeeded' );
+is( $res_accept->content, "{'lou' => 'is my cat'}", "Request returned proper data");
+
+$t = Test::Rest->new(
+    'content_type' => 'text/x-data-dumper',
+    'accept'       => 'application/json',
+);
+
+$res_accept = request($t->get(url => '/serialize/test'));
+ok( $res_accept->is_success, 'GET the serialized request succeeded' );
+is( $res_accept->content, '{"lou":"is my cat"}', "Request returned proper data");
 
 1;
