@@ -79,7 +79,7 @@ Catalyst::Action::Serialize - Serialize Data in a Response
 =head1 DESCRIPTION
 
 This action will serialize the body of an HTTP Response.  The serializer is
-selected by introspecting the HTTP Requests content-type header.
+selected by introspecting the HTTP Requests Accept and content-type header.
 
 It requires that your Catalyst controller is properly configured to set up the
 mapping between Content Type's and Serialization classes.

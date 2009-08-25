@@ -62,7 +62,15 @@ sub _load_content_plugins {
     $map = $config->{'map'};
 
     # pick preferred content type
-    my @accepted_types; # priority order, best first
+    my @accepted_types;    # priority order, best first
+
+    # accept should have priority over content-type for the serialization
+    if ( $search_path eq "Catalyst::Action::Serialize"
+        && defined $c->request->headers->{accept} )
+    {
+        push @accepted_types, $c->request->headers->{accept};
+    }
+
     # give top priority to content type specified by stash, if any
     my $content_type_stash_key = $config->{content_type_stash_key};
     if ($content_type_stash_key
