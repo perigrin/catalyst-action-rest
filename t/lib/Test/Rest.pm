@@ -15,13 +15,17 @@ use Params::Validate qw(:all);
 
 sub new {
     my $self = shift;
-    my %p    = validate( @_, { 
-            content_type => { type => SCALAR }, 
-        }, 
+    my %p    = validate(
+        @_,
+        {
+            content_type => { type => SCALAR },
+            accept       => 0,
+        },
     );
-    my $ref  = {
+    my $ref = {
         'ua'           => LWP::UserAgent->new,
         'content_type' => $p{'content_type'},
+        'accept'       => $p{'accept'},
     };
     bless $ref, $self;
 }
@@ -36,6 +40,7 @@ sub new {
             my %p    = validate( @_, { url => { type => SCALAR }, }, );
             my $req  = HTTP::Request->new( "$method" => $p{'url'} );
             $req->content_type( $self->{'content_type'} );
+            $req->header( Accept => $self->{'accept'} );
             return $req;
         };
     }
