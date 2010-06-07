@@ -4,7 +4,7 @@ use Moose;
 use namespace::autoclean;
 
 extends 'Catalyst::Action';
-with 'Catalyst::Action::SerializeBase';
+with qw(Catalyst::ActionRole::SerializeblePlugins);
 use Module::Pluggable::Object;
 use MRO::Compat;
 
@@ -12,9 +12,9 @@ our $VERSION = '0.85';
 $VERSION = eval $VERSION;
 
 has _encoders => (
-   is => 'ro',
-   isa => 'HashRef',
-   default => sub { {} },
+    is      => 'ro',
+    isa     => 'HashRef',
+    default => sub { {} },
 );
 
 sub execute {
@@ -29,34 +29,38 @@ sub execute {
     return 1 if $c->response->status =~ /^(?:204)$/;
 
     my ( $sclass, $sarg, $content_type ) =
-      $self->_load_content_plugins( "Catalyst::Action::Serialize",
-        $controller, $c );
+      $self->_load_content_plugins( "Catalyst::Action::Serialize", $controller,
+        $c );
     unless ( defined($sclass) ) {
         if ( defined($content_type) ) {
             $c->log->info("Could not find a serializer for $content_type");
-        } else {
+        }
+        else {
             $c->log->info(
                 "Could not find a serializer for an empty content-type");
         }
         return 1;
     }
-    $c->log->debug(
-        "Serializing with $sclass" . ( $sarg ? " [$sarg]" : '' ) ) if $c->debug;
+    $c->log->debug( "Serializing with $sclass" . ( $sarg ? " [$sarg]" : '' ) )
+      if $c->debug;
 
     $self->_encoders->{$sclass} ||= $sclass->new;
     my $sobj = $self->_encoders->{$sclass};
 
     my $rc;
     eval {
-        if ( defined($sarg) ) {
+        if ( defined($sarg) )
+        {
             $rc = $sobj->execute( $controller, $c, $sarg );
-        } else {
+        }
+        else {
             $rc = $sobj->execute( $controller, $c );
         }
     };
     if ($@) {
         return $self->_serialize_bad_request( $c, $content_type, $@ );
-    } elsif (!$rc) {
+    }
+    elsif ( !$rc ) {
         return $self->_unsupported_media_type( $c, $content_type );
     }
 

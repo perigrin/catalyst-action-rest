@@ -4,7 +4,7 @@ use Moose;
 use namespace::autoclean;
 
 extends 'Catalyst::Action';
-with 'Catalyst::Action::SerializeBase';
+with qw(Catalyst::ActionRole::SerializeblePlugins);
 use Module::Pluggable::Object;
 use MRO::Compat;
 
@@ -27,12 +27,14 @@ sub execute {
         my $rc;
         if ( defined($sarg) ) {
             $rc = $sclass->execute( $controller, $c, $sarg );
-        } else {
+        }
+        else {
             $rc = $sclass->execute( $controller, $c );
         }
         if ( $rc eq "0" ) {
             return $self->_unsupported_media_type( $c, $content_type );
-        } elsif ( $rc ne "1" ) {
+        }
+        elsif ( $rc ne "1" ) {
             return $self->_serialize_bad_request( $c, $content_type, $rc );
         }
     }
