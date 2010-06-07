@@ -264,7 +264,7 @@ such require you pass the current context ($c) as the first argument.
 
 =cut
 
-BEGIN { extends 'Catalyst::Controller' }
+BEGIN { extends 'Catalyst::Controller::ActionRole' }
 use Params::Validate qw(SCALAR OBJECT);
 
 __PACKAGE__->mk_accessors(qw(serialize));
@@ -287,9 +287,9 @@ __PACKAGE__->config(
     },
 );
 
-sub begin : ActionClass('Deserialize') { }
+sub begin : Does('Deserialize') { }
 
-sub end : ActionClass('Serialize') { }
+sub end : Does('Serialize') { }
 
 =item status_ok
 

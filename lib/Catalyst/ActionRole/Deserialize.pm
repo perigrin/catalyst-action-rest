@@ -1,12 +1,51 @@
-package Catalyst::Action::Deserialize;
+package Catalyst::ActionRole::Deserialize;
 
-use Moose;
+use Moose::Role;
 use namespace::autoclean;
 
-extends 'Catalyst::Action';
-with qw(Catalyst::ActionRole::Deserialize);
 
-__PACKAGE__->meta->make_immutable;
+with qw(Catalyst::ActionRole::SerializeblePlugins);
+use Module::Pluggable::Object;
+use MRO::Compat;
+
+our $VERSION = '0.85';
+$VERSION = eval $VERSION;
+
+has plugins => ( is => 'rw' );
+
+around execute => sub {
+    my $next = shift;
+    my $self = shift;
+    my ( $controller, $c ) = @_;
+
+    my @demethods = qw(POST PUT OPTIONS DELETE);
+    my $method    = $c->request->method;
+    if ( grep /^$method$/, @demethods ) {
+        my ( $sclass, $sarg, $content_type ) =
+          $self->_load_content_plugins( 'Catalyst::Action::Deserialize',
+            $controller, $c );
+        return 1 unless defined($sclass);
+        my $rc;
+        if ( defined($sarg) ) {
+            $rc = $sclass->execute( $controller, $c, $sarg );
+        }
+        else {
+            $rc = $sclass->execute( $controller, $c );
+        }
+        if ( $rc eq "0" ) {
+            return $self->_unsupported_media_type( $c, $content_type );
+        }
+        elsif ( $rc ne "1" ) {
+            return $self->_serialize_bad_request( $c, $content_type, $rc );
+        }
+    }
+
+    $self->$next(@_);
+
+    return 1;
+};
+
+1;
 
 =head1 NAME
 
