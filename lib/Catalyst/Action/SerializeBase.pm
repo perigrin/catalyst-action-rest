@@ -18,6 +18,27 @@ after BUILDARGS => sub {
 
 has [qw(_serialize_plugins _loaded_plugins)] => ( is => 'rw' );
 
+sub _find_accepted_content_types {
+    my ( $self, $c, $config ) = @_;
+    
+    # pick preferred content type
+    my @accepted_types; # priority order, best first
+    # give top priority to content type specified by stash, if any
+    my $content_type_stash_key = $config->{content_type_stash_key};
+    if ($content_type_stash_key
+        and my $stashed = $c->stash->{$content_type_stash_key}
+    ) {
+        # convert to array if not already a ref
+        $stashed = [ $stashed ] if not ref $stashed;
+        push @accepted_types, @$stashed;
+    }
+    # then content types requested by caller
+    push @accepted_types, @{ $c->request->accepted_content_types };
+    # then the default
+    push @accepted_types, $config->{'default'} if $config->{'default'};
+    return @accepted_types;
+}
+
 sub _load_content_plugins {
     my $self = shift;
     my ( $search_path, $controller, $c ) = @_;
@@ -56,21 +77,8 @@ sub _load_content_plugins {
     }
     $map = $config->{'map'};
 
-    # pick preferred content type
-    my @accepted_types; # priority order, best first
-    # give top priority to content type specified by stash, if any
-    my $content_type_stash_key = $config->{content_type_stash_key};
-    if ($content_type_stash_key
-        and my $stashed = $c->stash->{$content_type_stash_key}
-    ) {
-        # convert to array if not already a ref
-        $stashed = [ $stashed ] if not ref $stashed;
-        push @accepted_types, @$stashed;
-    }
-    # then content types requested by caller
-    push @accepted_types, @{ $c->request->accepted_content_types };
-    # then the default
-    push @accepted_types, $config->{'default'} if $config->{'default'};
+    my @accepted_types = $self->_find_accepted_content_types( $c, $config );
+
     # pick the best match that we have a serializer mapping for
     my ($content_type) = grep { $map->{$_} } @accepted_types;
 
