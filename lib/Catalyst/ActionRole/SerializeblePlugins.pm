@@ -164,3 +164,26 @@ sub _serialize_bad_request {
 
 1;
 
+=head1 NAME
+
+Catalyst::ActionRole::SerializeblePlugins - A Role for implementing Content-Type negotiation via plugins.
+
+=head1 DESCRIPTION
+
+This module implements the plugin loading and content-type negotiating
+code for L<Catalyst::ActionRole::Serialize> and L<Catalyst::ActionRole::Deserialize>.
+
+=head1 SEE ALSO
+
+L<Catalyst::ActionRole::Serialize>, L<Catalyst::ActionRole::Deserialize>,
+L<Catalyst::Controller::REST>,
+
+=head1 AUTHORS
+
+See L<Catalyst::Action::REST> for authors.
+
+=head1 LICENSE
+
+You may distribute this code under the same terms as Perl itself.
+
+=cut

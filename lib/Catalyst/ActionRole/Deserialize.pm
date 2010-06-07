@@ -49,7 +49,7 @@ around execute => sub {
 
 =head1 NAME
 
-Catalyst::Action::Deserialize - Deserialize Data in a Request
+Catalyst::ActionRole::Deserialize - Deserialize Data in a Request
 
 =head1 SYNOPSIS
 
@@ -64,11 +64,11 @@ Catalyst::Action::Deserialize - Deserialize Data in a Request
         },
     );
 
-    sub begin :ActionClass('Deserialize') {}
+    sub begin :Does('Deserialize') {}
 
 =head1 DESCRIPTION
 
-This action will deserialize HTTP POST, PUT, and OPTIONS requests.
+This action Role will deserialize HTTP POST, PUT, and OPTIONS requests.
 It assumes that the body of the HTTP Request is a serialized object.
 The serializer is selected by introspecting the requests content-type
 header.
@@ -84,7 +84,7 @@ While it is common for this Action to be called globally as a
 C<begin> method, there is nothing stopping you from using it on a
 single routine:
 
-   sub foo :Local :Action('Deserialize') {}
+   sub foo :Local :Does('Deserialize') {}
 
 Will work just fine.
 
@@ -96,7 +96,7 @@ L<Catalyst::Request::REST>.
 You likely want to look at L<Catalyst::Controller::REST>, which implements
 a sensible set of defaults for a controller doing REST.
 
-L<Catalyst::Action::Serialize>, L<Catalyst::Action::REST>
+L<Catalyst::ActionRole::Serialize>, L<Catalyst::Action::REST>
 
 =head1 AUTHORS
 

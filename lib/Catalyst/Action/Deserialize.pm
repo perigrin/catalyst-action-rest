@@ -12,6 +12,12 @@ __PACKAGE__->meta->make_immutable;
 
 Catalyst::Action::Deserialize - Deserialize Data in a Request
 
+=head1 DEPRECATION
+
+This Class has been Deprecated for L<Catalyst::ActionRole::Deserialize>.
+The documentation below is included for historical reasons, the actual
+implementation is held in L<Catalyst::ActionRole::Deserialize>.
+
 =head1 SYNOPSIS
 
     package Foo::Controller::Bar;

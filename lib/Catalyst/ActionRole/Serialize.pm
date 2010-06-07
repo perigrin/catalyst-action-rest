@@ -70,7 +70,7 @@ after execute => sub {
 
 =head1 NAME
 
-Catalyst::Action::Serialize - Serialize Data in a Response
+Catalyst::ActionRole::Serialize - Serialize Data in a Response
 
 =head1 SYNOPSIS
 
@@ -86,11 +86,11 @@ Catalyst::Action::Serialize - Serialize Data in a Response
         }
     );
 
-    sub end :ActionClass('Serialize') {}
+    sub end :Does('Serialize') {}
 
 =head1 DESCRIPTION
 
-This action will serialize the body of an HTTP Response.  The serializer is
+This action role will serialize the body of an HTTP Response.  The serializer is
 selected by introspecting the HTTP Requests content-type header.
 
 It requires that your Catalyst controller is properly configured to set up the
@@ -102,7 +102,7 @@ L<Catalyst::Action::Serialize>.
 Typically, you would use this ActionClass on your C<end> method.  However,
 nothing is stopping you from choosing specific methods to Serialize:
 
-  sub foo :Local :ActionClass('Serialize') {
+  sub foo :Local :Does('Serialize') {
      .. populate stash with data ..
   }
 
@@ -147,7 +147,7 @@ with the rest of Catalyst.
 You likely want to look at L<Catalyst::Controller::REST>, which implements
 a sensible set of defaults for doing a REST controller.
 
-L<Catalyst::Action::Deserialize>, L<Catalyst::Action::REST>
+L<Catalyst::ActionRole::Deserialize>, L<Catalyst::Action::REST>
 
 =head1 AUTHORS
 

@@ -13,6 +13,12 @@ with qw(Catalyst::ActionRole::SerializeblePlugins);
 
 Catalyst::Action::SerializeBase - Base class for Catalyst::Action::Serialize and Catlayst::Action::Deserialize.
 
+=head1 DEPRECATION
+
+This Class has been Deprecated. It is no longer actually used by the
+L<Catalyst::Action::Serialize> or L<Catalyst::Action::Deserialize>
+Classes. The documentation below is included for historical reasons.
+
 =head1 DESCRIPTION
 
 This module implements the plugin loading and content-type negotiating

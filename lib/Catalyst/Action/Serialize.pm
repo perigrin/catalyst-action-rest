@@ -6,12 +6,18 @@ use namespace::autoclean;
 extends 'Catalyst::Action';
 with qw(Catalyst::ActionRole::Serialize);
 
-
 __PACKAGE__->meta->make_immutable;
 
 =head1 NAME
 
 Catalyst::Action::Serialize - Serialize Data in a Response
+
+=head1 DEPRECATION
+
+This Class has been Deprecated for L<Catalyst::ActionRole::Serialize>.
+The documentation below is included for historical reasons, the actual
+implementation is held in L<Catalyst::ActionRole::Serialize>.
+
 
 =head1 SYNOPSIS
 
