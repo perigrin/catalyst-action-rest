@@ -3,7 +3,8 @@ package Catalyst::Action::Serialize;
 use Moose;
 use namespace::autoclean;
 
-extends 'Catalyst::Action::SerializeBase';
+extends 'Catalyst::Action';
+with 'Catalyst::Action::SerializeBase';
 use Module::Pluggable::Object;
 use MRO::Compat;
 

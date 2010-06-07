@@ -1,9 +1,8 @@
 package Catalyst::Action::SerializeBase;
 
-use Moose;
+use Moose::Role;
 use namespace::autoclean;
 
-extends 'Catalyst::Action';
 use Module::Pluggable::Object;
 use Catalyst::Request::REST;
 use Catalyst::Utils ();
@@ -155,7 +154,8 @@ sub _serialize_bad_request {
     return undef;
 }
 
-__PACKAGE__->meta->make_immutable;
+#__PACKAGE__->meta->make_immutable;
+1;
 
 =head1 NAME
 
